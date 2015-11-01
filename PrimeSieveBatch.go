@@ -2,12 +2,12 @@
 package prime
 
 type PrimeSieveBatch struct {
-	batchSize uint
+	BatchSize uint
 }
 
 // Send the sequence 2, 3, 4, ... to channel 'ch'.
 func (p PrimeSieveBatch) generate(ch chan<- []uint64) {
-	outs := make([]uint64, 0, p.batchSize)
+	outs := make([]uint64, 0, p.BatchSize)
 	i := uint64(2)
 	for ; ; i++ {
 		addToOuts := true
@@ -22,7 +22,7 @@ func (p PrimeSieveBatch) generate(ch chan<- []uint64) {
 			outs = append(outs, i)
 			if len(outs) == cap(outs) {
 				ch <- outs
-				outs = make([]uint64, 0, p.batchSize)
+				outs = make([]uint64, 0, p.BatchSize)
 				break
 			}
 		}
@@ -32,7 +32,7 @@ func (p PrimeSieveBatch) generate(ch chan<- []uint64) {
 		outs = append(outs, i)
 		if len(outs) == cap(outs) {
 			ch <- outs
-			outs = make([]uint64, 0, p.batchSize)
+			outs = make([]uint64, 0, p.BatchSize)
 		}
 	}
 }
@@ -40,7 +40,7 @@ func (p PrimeSieveBatch) generate(ch chan<- []uint64) {
 // Copy the values from channel 'in' to channel 'out',
 // removing those divisible by 'prime'.
 func (p PrimeSieveBatch) filter(out chan<- []uint64, primes []uint64, in <-chan []uint64) {
-	outs := make([]uint64, 0, p.batchSize)
+	outs := make([]uint64, 0, p.BatchSize)
 	for {
 		ins := <-in // Receive value from 'in'.
 		for i := 0; i < len(ins); i++ {
@@ -56,7 +56,7 @@ func (p PrimeSieveBatch) filter(out chan<- []uint64, primes []uint64, in <-chan 
 				outs = append(outs, ins[i])
 				if len(outs) == cap(outs) {
 					out <- outs
-					outs = make([]uint64, 0, p.batchSize)
+					outs = make([]uint64, 0, p.BatchSize)
 				}
 			}
 		}
@@ -66,7 +66,7 @@ func (p PrimeSieveBatch) filter(out chan<- []uint64, primes []uint64, in <-chan 
 
 // The prime sieve: Daisy-chain Filter processes.
 func (p PrimeSieveBatch) GetPrimes(n uint) []uint64 {
-	primes := make([]uint64, 0, n+p.batchSize)
+	primes := make([]uint64, 0, n+p.BatchSize)
 	ch := make(chan []uint64)
 	go p.generate(ch)
 	for len(primes) < int(n) {
